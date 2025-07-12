@@ -1,5 +1,6 @@
 package com.meaphorce.services;
 
+import com.meaphorce.exception.MovieNotFoundException;
 import com.meaphorce.models.Movie;
 import com.meaphorce.repositories.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,10 @@ public class MovieService {
     }
 
     public Optional<Movie> getMovieById(Long id) {
+        if (!movieRepository.existsById(id)) {
+            throw new MovieNotFoundException(id);
+        }
+
         return movieRepository.findById(id);
     }
 
@@ -25,18 +30,19 @@ public class MovieService {
         return movieRepository.save(movie);
     }
 
-    public Optional<Movie> updateMovie(Long id, Movie movie) {
-        Optional<Movie> movieOptional = movieRepository.findById(id);
-        if (movieOptional.isPresent()) {
-            movieOptional.get().setTitle(movie.getTitle());
-            movieOptional.get().setDescription(movie.getDescription());
-            movieOptional.get().setAvailable(movie.isAvailable());
+    public Movie updateMovie(Long id, Movie updatedMovie) {
+        if (!movieRepository.existsById(id)) {
+            throw new MovieNotFoundException(id);
         }
-        movieRepository.save(movieOptional.get());
-        return movieOptional;
+        updatedMovie.setId(id);
+        return movieRepository.save(updatedMovie);
     }
 
     public void deleteMovie(Long id) {
+        if (!movieRepository.existsById(id)) {
+            throw new MovieNotFoundException(id);
+        }
+
         movieRepository.deleteById(id);
     }
 }
